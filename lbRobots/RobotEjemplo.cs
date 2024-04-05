@@ -34,7 +34,7 @@ namespace lbRobots
             foreach(DataRow fila in DtUsuarios.Rows)
             {
                 //Click en nuevo usuario
-                await Task.Delay(800);
+                await Task.Delay(1000);
                 element = wait.Until(webDriver => webDriver.FindElement(By.XPath("/html/body/div[1]/main/article/form/div/div/fieldset/div/div/div[6]/div/button[2]")));
                 ((IJavaScriptExecutor)edgeDriver).ExecuteScript("arguments[0].click();", element);
                 await Task.Delay(500);
