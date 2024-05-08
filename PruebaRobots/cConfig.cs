@@ -22,6 +22,7 @@ namespace Robots
 
         //Notificacion Despachos
         public string ND_UrlLogin { get { return config["RobotConsultaSura:UrlLogin"]; } }
+        public string ND_UserSecret { get { return config["RobotConsultaSura:UserSecret"]; } }
         public string ND_UrlNotifiDespachos { get { return config["RobotConsultaSura:UrlNotificaciondespachos"]; } }
         public string ND_UserLogin { get { return config["RobotConsultaSura:UserLogin"]; } }
         public string ND_PassLogin { get { return config["RobotConsultaSura:Passlogin"]; } }

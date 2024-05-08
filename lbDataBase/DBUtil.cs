@@ -32,5 +32,27 @@ namespace lbDataBase
 
             }
         }
+
+        public static T GetValue<T>(string CadConn, string sqlCommand)
+        {
+            using (SqlConnection conn = new SqlConnection(CadConn))
+            {
+                using (SqlCommand cmd = new SqlCommand(sqlCommand, conn))
+                {
+                    try
+                    {
+                        conn.Open();
+                        T valor;
+                        valor = (T)(cmd.ExecuteScalar());
+                        conn.Close();
+                        return valor;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error GetData() error:{ex.Message}");
+                    }
+                }
+            }
+        }
     }
 }

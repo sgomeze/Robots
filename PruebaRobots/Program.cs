@@ -34,8 +34,8 @@ DataTable dt = DBUtil.GetData(config.ConnectionString, $@"SELECT DISTINCT
                                                             AND mv.FECHA='{DateTime.Today.ToString("yyyyMMdd")}'
                                                                     ");
 //Codido para cargar informacion de base de datos en lña variable dt
-
-RobotConsultaNotifiDespachos rConsNotifidespachos = new RobotConsultaNotifiDespachos(config.ND_UrlLogin, config.ND_UserLogin, config.ND_PassLogin, config.ND_UrlNotifiDespachos, dt);
+string SecretTFA = config.ND_UserSecret; //DBUtil.GetValue<string>(config.ConnectionString, @"select Value from Diccionario where [Key]='ClaveTFA'") ;
+RobotConsultaNotifiDespachos rConsNotifidespachos = new RobotConsultaNotifiDespachos(config.ND_UrlLogin, config.ND_UserLogin, config.ND_PassLogin, config.ND_UrlNotifiDespachos, dt, SecretTFA);
 await rConsNotifidespachos.EjecutarRobot();
 
 Console.ReadLine();

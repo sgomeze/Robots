@@ -1,10 +1,13 @@
-﻿using OpenQA.Selenium;
+﻿using Google.Authenticator;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Support.UI;
+using OtpNet;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,13 +39,33 @@ namespace lbRobots
             {
                 return "Valor No Existe";
             }
-            
+        }
 
+        string getClaveTFA(string secretPass)
+        {
+            byte[] claveTFAb = Encoding.UTF8.GetBytes($"{secretPass}");
+            var totp = new Totp(claveTFAb,step:30, mode:OtpHashMode.Sha1);
+            string CodigoTFA = totp.ComputeTotp(DateTime.Now);
+            return CodigoTFA;
+        }
+
+        string getClaveTFAGA(string secretPass)
+        {
+            TwoFactorAuthenticator tfa = new TwoFactorAuthenticator();
+           
+            var secretAsBytes = Encoding.UTF8.GetBytes(secretPass);
+            var secretAsBase32 = Google.Authenticator.Base32Encoding.ToString(secretAsBytes);
+            var CodigoTFA = tfa.GetCurrentPIN(secretAsBase32,true);
+            var Claves = tfa.GetCurrentPINs(secretAsBase32,true);
+            return CodigoTFA;
+            
         }
         public async Task EjecutarRobot()
         {
             try
             {
+                var TFAG = getClaveTFAGA(SecretTFA.ToLower());
+                var TFA = getClaveTFA(SecretTFA);
                 //Iniciar Navegador
                 EdgeOptions options = new EdgeOptions();
                 options.AddArgument("--disable-notifications");
@@ -63,6 +86,22 @@ namespace lbRobots
                 element.SendKeys("");
                 ((IJavaScriptExecutor)edgeDriver).ExecuteScript("arguments[0].click();", element);
                 await Task.Delay(1000);
+
+                //Doble factor de autenticacion
+                if(SecretTFA.Trim().Length>0)
+                {
+                    elemnt = edgeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/form/input[4]"));
+                    elemnt.Clear();
+                    elemnt.SendKeys(getClaveTFAGA(SecretTFA));
+                    //element = wait.Until(webDriver => webDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/form/div[1]/label/input")));
+                    //((IJavaScriptExecutor)edgeDriver).ExecuteScript("arguments[0].click();", element);
+
+                    element = wait.Until(webDriver => webDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/form/div[2]/input")));
+                    element.SendKeys("");
+                    ((IJavaScriptExecutor)edgeDriver).ExecuteScript("arguments[0].click();", element);
+                    await Task.Delay(1000);
+                }
+                
                 //Generar Busquedas
                 foreach (DataRow dr in Dt.Rows)
                 {
@@ -97,13 +136,14 @@ namespace lbRobots
                 throw new Exception($"Error ejecutando robot Notificacion Despachos error:{ex.Message}");
             }
         }
-        public RobotConsultaNotifiDespachos(string urlLogin, string userlogin, string passLogin, string urlNotfiDespachos, DataTable dt)
+        public RobotConsultaNotifiDespachos(string urlLogin, string userlogin, string passLogin, string urlNotfiDespachos, DataTable dt, string secretTFA)
         {
             UrlLogin = urlLogin;
             Userlogin = userlogin;
             PassLogin = passLogin;
             UrlNotfiDespachos = urlNotfiDespachos;
             Dt = dt;
+            SecretTFA = secretTFA;
             ComplementaDT();
         }
 
@@ -112,5 +152,6 @@ namespace lbRobots
         public string PassLogin { get; }
         public string UrlNotfiDespachos { get; }
         public DataTable Dt { get; }
+        public string SecretTFA { get; }
     }
 }
